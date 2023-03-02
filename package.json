@@ -7,7 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "body-parse": "^0.1.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
