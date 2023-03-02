@@ -17,6 +17,7 @@ connectDatabase();
 
 app.use('/', routes);
 
-app.listen(1000, () => {
-  console.log('Your app is listening on port 1000');
+const PORT = process.env.port || 3000;
+app.listen(PORT, () => {
+  console.log(`Your app is listening on port ${PORT}`);
 });
