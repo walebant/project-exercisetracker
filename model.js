@@ -8,10 +8,6 @@ const UserSchema = new Schema(
       required: true,
       type: String,
     },
-    _id: {
-      required: true,
-      type: String,
-    },
   },
   { versionKey: false }
 );
@@ -35,10 +31,6 @@ const ExerciseSchema = new Schema(
       type: String,
     },
     userId: {
-      required: true,
-      type: String,
-    },
-    _id: {
       required: true,
       type: String,
     },
