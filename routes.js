@@ -40,7 +40,7 @@ router.post('/api/users/:_id/exercises', async (req, res) => {
   const exercise = new ExerciseSchema({
     userId,
     username: user.username,
-    date: date ? new Date(date).toDateString() : new Date().toDateString(),
+    date: date ? new Date(date) : new Date(),
     duration: Number(duration),
     description,
   });
@@ -50,7 +50,7 @@ router.post('/api/users/:_id/exercises', async (req, res) => {
 
     res.status(200).send({
       username: exerciseData.username,
-      date: exerciseData.date,
+      date: exerciseData.date.toDateString(),
       duration: exerciseData.duration,
       description: exerciseData.description,
       _id: exerciseData.userId,
@@ -61,28 +61,66 @@ router.post('/api/users/:_id/exercises', async (req, res) => {
 });
 
 // get user's exercise log
-// router.get('/api/users/:_id/logs?[from][&to][&limit]', async (req, res) => {
 router.get('/api/users/:_id/logs', async (req, res) => {
   try {
     const user = await UserSchema.findById(req.params._id);
+    const { from, to, limit } = req.query;
+
+    // Validate query parameters
+    if (from && !isValidDate(from)) {
+      return res.status(400).send({
+        error: 'Invalid from date. Please enter date in yyyy-mm-dd format',
+      });
+    }
+
+    // validate toDate
+    if (to && !isValidDate(to)) {
+      return res.status(400).send({
+        error: 'Invalid to date. Please enter date in yyyy-mm-dd format',
+      });
+    }
+
+    // validate limit
+    if (limit && isNaN(limit)) {
+      return res
+        .status(400)
+        .send({ error: 'Invalid limit. Please enter a number' });
+    }
+
+    // Prepare query options based on query parameters
+    const options = {};
+    if (from) {
+      options.date = { $gte: new Date(from) };
+    }
+    if (to) {
+      options.date = { ...options.date, $lte: new Date(to) };
+    }
+
+    // filter all exercise that matches the username
     const userExercises = await ExerciseSchema.find({
       username: user.username,
-    }).select('description duration date');
-
-    const { from, to, limit } = req.query;
+      ...options,
+    })
+      .limit(parseInt(limit))
+      .select('-_id description duration date');
 
     res.send({
       username: user.username,
+      _id: user._id,
       count: userExercises.length,
       _id: user._id,
-      log: userExercises,
+      log: userExercises.map(item => ({
+        description: item.description,
+        duration: item.duration,
+        date: item.date.toDateString(),
+      })),
     });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
 });
 
-// Helper function to validate date strings in yyyy-mm-dd format
+// Validate date strings in yyyy-mm-dd format
 function isValidDate(dateString) {
   const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
   return isoDateRegex.test(dateString);

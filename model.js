@@ -28,7 +28,8 @@ const ExerciseSchema = new Schema(
     },
     date: {
       required: true,
-      type: String,
+      type: Date,
+      default: Date.now,
     },
     userId: {
       required: true,
